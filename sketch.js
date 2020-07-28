@@ -1,3 +1,7 @@
+/**
+ * La entrada del sistema, en este caso definida a escala px:cm
+ */
+const DISTANCIA_REFERENCIAL = 20
 let roomba;
 let obstacles = [];
 const speedX = 2;
@@ -87,7 +91,6 @@ function draw() {
     obstacles.forEach(o => {
         o.display();
         if (o.isColliding(roomba.x, roomba.y, roomba.radius)) {
-            console.log("Venia pisteando como un campeon");
             roomba.avoid();
         }
     });
@@ -96,12 +99,13 @@ function draw() {
 
 class Roomba {
     history = [];
+    batteryLife = 500;
 
     constructor(initialX, initialY, initialSpeedX, initialSpeedY, radius) {
         this.x = initialX;
         this.y = initialY;
-        this.speedX = Math.cos(initialSpeedX) * 2;
-        this.speedY = Math.sin(initialSpeedY) * 2;
+        this.speedX = Math.cos(initialSpeedX) * speedX;
+        this.speedY = Math.sin(initialSpeedY) * speedY;
         this.radius = radius;
     }
 
@@ -113,15 +117,20 @@ class Roomba {
     }
 
     move() {
-        this.x += this.speedX;
-        this.y += this.speedY;
+        if (this.batteryLife > 0) {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.batteryLife -= 0.005;
+        } else {
+            this.x += 0;
+            this.y += 0;
+        }
     }
 
 
     avoid() {
         do {
             const newDegree = random(180, 360)
-
             this.speedX = Math.cos(newDegree) * 2
             this.speedY = Math.sin(newDegree) * 2
         } while (obstacles.some(o => o.isColliding(roomba.x + this.speedX, roomba.y + this.speedY, roomba.radius)))
@@ -162,7 +171,7 @@ class Obstacle {
 
 
     isColliding(cx, cy, rad) {
-        return collideRectCircle(this.x, this.y, this.height, this.width, cx, cy, rad * 2 + 20);
+        return collideRectCircle(this.x, this.y, this.height, this.width, cx, cy, rad * 2 + DISTANCIA_REFERENCIAL);
     }
 
     isOverlapping(newX, newY, newHeight, newWidht) {

@@ -1,7 +1,7 @@
 let roomba;
 let obstacles = [];
-const speedX = 1;
-const speedY = 1;
+const speedX = 2;
+const speedY = 2;
 const speed = Math.sqrt(speedX * speedX + speedY * speedY);
 const directions = [
     TOP = {
@@ -73,7 +73,7 @@ function setup() {
         const newObstacleHeight = random(100) + 50;
         const newObstacleWidht = random(100) + 50
         if (!obstacles.some((obstacle) => obstacle.isOverlapping(newObstacleX, newObstacleY, newObstacleHeight, newObstacleWidht))
-            && !collideRectCircle(newObstacleX, newObstacleY, newObstacleHeight, newObstacleWidht, roomba.x, roomba.y, roomba.radius + 20)) {
+            && !collideRectCircle(newObstacleX, newObstacleY, newObstacleHeight, newObstacleWidht, roomba.x, roomba.y, roomba.radius + 100)) {
             obstacles[i] = new Obstacle(newObstacleX, newObstacleY, newObstacleHeight, newObstacleWidht);
             i++;
         }
@@ -81,7 +81,7 @@ function setup() {
 }
 
 function draw() {
-    background(51);
+    background(100);
     roomba.move();
     roomba.display();
     obstacles.forEach(o => {
@@ -100,14 +100,14 @@ class Roomba {
     constructor(initialX, initialY, initialSpeedX, initialSpeedY, radius) {
         this.x = initialX;
         this.y = initialY;
-        this.speedX = initialSpeedX;
-        this.speedY = initialSpeedY;
+        this.speedX = Math.cos(initialSpeedX) * 2;
+        this.speedY = Math.sin(initialSpeedY) * 2;
         this.radius = radius;
     }
 
     display() {
-        //this.getTrail();
-        fill(200);
+        // this.getTrail();
+        fill(30);
         ellipseMode(CENTER);
         ellipse(this.x, this.y, this.radius * 2);
     }
@@ -119,20 +119,12 @@ class Roomba {
 
 
     avoid() {
-        const opositeDirection = this.getOpositeDirection();
-        //Me quedo con los posibles movimientos sin colisionar
-        let possibleMoves = directions.filter(direction =>
-            obstacles.every(obstacle =>
-                !obstacle.isColliding(this.x + direction.x, this.y + direction.y, this.radius)
-            )
-        );
-        //Si hay mas de un movimiento, elimino el opuesto
-        if (possibleMoves.length > 1) {
-            possibleMoves = possibleMoves.filter(direction => direction !== opositeDirection);
-        }
+        do {
+            const newDegree = random(180, 360)
 
-        this.speedX = random(possibleMoves).x;
-        this.speedY = random(possibleMoves).y;
+            this.speedX = Math.cos(newDegree) * 2
+            this.speedY = Math.sin(newDegree) * 2
+        } while (obstacles.some(o => o.isColliding(roomba.x + this.speedX, roomba.y + this.speedY, roomba.radius)))
     }
 
     getDirection() {
@@ -148,7 +140,7 @@ class Roomba {
         this.history.push(v);
         for (let i = 0; i < this.history.length; i++) {
             let pos = this.history[i];
-            ellipse(pos.x, pos.y, this.radius * 2);
+            ellipse(pos.x, pos.y, this.radius * 0.1);
         }
     }
 }
@@ -163,17 +155,18 @@ class Obstacle {
     }
 
     display() {
-        fill(100);
+        fill(50);
         rectMode(CORNER);
         rect(this.x, this.y, this.height, this.width);
     }
 
 
     isColliding(cx, cy, rad) {
-        return collideRectCircle(this.x, this.y, this.height, this.width, cx, cy, rad * 2);
+        return collideRectCircle(this.x, this.y, this.height, this.width, cx, cy, rad * 2 + 20);
     }
 
     isOverlapping(newX, newY, newHeight, newWidht) {
-        return collideRectRect(this.x, this.y, this.height, this.width, newX, newY, newHeight, newWidht);
+        const collided = collideRectRect(this.x, this.y, this.height, this.width, newX, newY, newHeight, newWidht);
+        return collided;
     }
 }

@@ -1,13 +1,13 @@
 let roomba;
 let obstacles = [];
-//TODO: Deberia ser una sola speed, y que esa misma se use tanto en x como en y
 const speedX = 1;
 const speedY = 1;
+const speed = Math.sqrt(speedX * speedX + speedY * speedY);
 const directions = [
     TOP = {
         name: 'top',
         x: 0,
-        y: -speedY
+        y: -speed
     },
     TOPRIGHT = {
         name: 'topRight',
@@ -16,7 +16,7 @@ const directions = [
     },
     RIGHT = {
         name: 'right',
-        x: speedX,
+        x: speed,
         y: 0
     },
     BOTTOMRIGHT = {
@@ -27,7 +27,7 @@ const directions = [
     BOTTOM = {
         name: 'bottom',
         x: 0,
-        y: speedY
+        y: speed
     },
     BOTTOMLEFT = {
         name: 'bottomLeft',
@@ -36,7 +36,7 @@ const directions = [
     },
     LEFT = {
         name: 'left',
-        x: -speedX,
+        x: -speed,
         y: 0
     },
     TOPLEFT = {
@@ -49,6 +49,9 @@ const directions = [
 
 function setup() {
 
+    const firstPossibleMoves = directions.filter(direction => direction.name === 'top' || direction.name === 'right'
+        || direction.name === 'bottom' || direction.name === 'left');
+    const firstRandomMove = random(firstPossibleMoves);
     const height = 600;
     const width = 600;
     createCanvas(width, height);
@@ -56,7 +59,7 @@ function setup() {
     fill(200)
     const vacuumX = 300;
     const vacuumY = 300;
-    roomba = new Roomba(vacuumX, vacuumY, random(directions).x, random(directions).y, 30);
+    roomba = new Roomba(vacuumX, vacuumY, firstRandomMove.x, firstRandomMove.y, 30);
 
     obstacles.push(new Obstacle(0, 0, this.height, 20));
     obstacles.push(new Obstacle(0, 0, 20, this.width));
@@ -125,7 +128,7 @@ class Roomba {
         );
         //Si hay mas de un movimiento, elimino el opuesto
         if (possibleMoves.length > 1) {
-            possibleMoves = possibleMoves.filter(direction => direction != opositeDirection);
+            possibleMoves = possibleMoves.filter(direction => direction !== opositeDirection);
         }
 
         this.speedX = random(possibleMoves).x;
